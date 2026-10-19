@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Construshop Inbox</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: barra superior con selector de rol, lista de conversaciones a la izquierda, chat o panel de supervisor a la derecha. */
+:root{
+  --bg:#ffffff; --surface:#ffffff; --surface2:#f1f3f4; --ink:#1d2326; --muted:#5d676b; --line:#dfe3e5;
+  --accent:#d9620b; --accent-ink:#ffffff; --in:#ffffff; --out:#ffe9cf;
+  --ok:#237a47; --warn:#a86500; --bad:#b3312a; --okbg:#e0f1e6; --warnbg:#fbeccd; --badbg:#f8dedb;
+  --sans:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--sans);padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:16px}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.brand{display:flex;flex-direction:column}
+.brand b{font-size:17px;letter-spacing:.01em}
+.brand span{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.who{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.who label{font-size:12px;color:var(--muted)}
+select,input[type=text]{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 9px;min-width:0}
+.banner{background:var(--warnbg);color:var(--warn);border-radius:6px;padding:8px 12px;font-size:12.5px}
+.sim{background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.sim summary{padding:10px 12px;cursor:pointer;font-weight:600}
+.sim .row{display:flex;flex-wrap:wrap;gap:8px;padding:0 12px 12px;align-items:center}
+.sim input[type=text]{flex:1 1 180px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 12px}
+.chip{background:var(--surface2);border:0;border-radius:99px;padding:4px 10px;font-size:12px}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:6px;padding:8px 14px;font-weight:600}
+.btn.ghost{background:var(--surface2);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.main{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:12px;align-items:start}
+@media(max-width:820px){.main{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;min-width:0}
+.panel h2{margin:0;padding:12px 14px;font-size:12px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--line)}
+.list{max-height:560px;overflow:auto}
+.conv{display:flex;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer;width:100%;background:none;border-left:0;border-right:0;border-top:0;text-align:left}
+.conv:hover,.conv.sel{background:var(--surface2)}
+.av{flex:none;width:34px;height:34px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;font-size:12px;font-weight:600;font-family:var(--mono)}
+.conv.sel .av{background:var(--surface)}
+.cb{min-width:0;flex:1}
+.cb .l1{display:flex;justify-content:space-between;gap:8px}
+.cb .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cb .tm{font-family:var(--mono);font-size:11px;color:var(--muted);flex:none}
+.cb .pv{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tags{display:flex;gap:5px;margin-top:3px;flex-wrap:wrap}
+.tag{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:4px;background:var(--surface2);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.tag.new{background:var(--accent);color:var(--accent-ink)}
+.tag.ok{background:var(--okbg);color:var(--ok)}
+.tag.warn{background:var(--warnbg);color:var(--warn)}
+.tag.bad{background:var(--badbg);color:var(--bad)}
+.empty{padding:28px 16px;color:var(--muted);text-align:center}
+.chat{display:flex;flex-direction:column;min-height:420px}
+.chead{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center}
+.chead b{font-size:15px}
+.chead small{display:block;color:var(--muted)}
+.msgs{padding:14px;display:flex;flex-direction:column;gap:6px;max-height:380px;overflow:auto;flex:1}
+.b{max-width:78%;padding:7px 10px;border-radius:8px;background:var(--in);border:1px solid var(--line);overflow-wrap:anywhere}
+.b.out{align-self:flex-end;background:var(--out);border-color:transparent}
+.b time{display:block;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px;text-align:right}
+.note{align-self:center;font-size:12px;color:var(--muted);background:var(--surface2);border-radius:6px;padding:4px 10px;text-align:center}
+.compose{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line)}
+.compose input{flex:1;min-width:0}
+.take{padding:10px 14px;border-top:1px solid var(--line);display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+.kpi{background:var(--surface);padding:12px 14px}
+.kpi b{display:block;font-family:var(--mono);font-size:24px;font-weight:500;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--muted)}
+.lines{width:100%;border-collapse:collapse}
+.lines th{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:8px 14px;font-weight:400}
+.lines td{padding:8px 14px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+@media(max-width:560px){.lines th:nth-child(3),.lines td:nth-child(3){display:none}.lines th,.lines td{padding-inline:10px}}
+.log{margin:0;padding:0;list-style:none;max-height:220px;overflow:auto}
+.log li{padding:7px 14px;border-top:1px solid var(--line);font-size:13px;display:flex;gap:10px}
+.log time{font-family:var(--mono);font-size:11px;color:var(--muted);flex:none;padding-top:1px}
+.sw{background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:12px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:13px;max-width:90vw;z-index:20}
+.stack{display:flex;flex-direction:column;gap:12px;min-width:0}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="brand"><b>Construshop · Bandeja unificada</b><span>Demo Studio Zentra · datos de ejemplo</span></div>
+    <div class="who"><label for="who">Ver como</label><select id="who"></select></div>
+  </div>
+  <div class="banner">Demo ilustrativa sin conexión a WhatsApp ni a Meta. Probá la lógica: cambiá de usuario, simulá un mensaje de cliente, marcá una ausencia desde Marcelo.</div>
+  <details class="sim" open>
+    <summary>Simulador de cliente</summary>
+    <div class="row">
+      <select id="sline" aria-label="Línea a la que escribe"></select>
+      <input type="text" id="sname" value="Carlos Benítez" aria-label="Nombre del cliente">
+      <input type="text" id="stext" value="Hola, necesito precio de cemento x50" aria-label="Mensaje">
+      <button class="btn" id="ssend">Enviar como cliente</button>
+    </div>
+    <div class="chips" id="chips"></div>
+  </details>
+  <div class="main">
+    <section class="panel"><h2 id="lh">Conversaciones</h2><div class="list" id="list"></div></section>
+    <div class="stack" id="right"></div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const USERS={pa:'Patricio',ma:'Marcela',ig:'Ignacio',vi:'Victor',be:'Belén',mg:'Marcelo'};
+const SELLERS=['pa','ma','ig','vi','be'];
+const LINES={general:'General',pa:'Patricio',ma:'Marcela',ig:'Ignacio',vi:'Victor',be:'Belén'};
+const MIN=60000, now0=Date.now();
+const ago=m=>now0-m*MIN;
+let S={
+  me:'ma', sel:null, view:'panel', seq:100,
+  absent:{pa:false,ma:false,ig:false,vi:false,be:false},
+  rts:[90000,150000,60000,200000,140000],
+  log:[{t:ago(25),m:'Marcela tomó la consulta de Mariana Paz (General) en 1 min'}],
+  convs:[
+    {id:1,name:'Cliente nuevo',line:'general',owner:null,handler:null,pool:true,releasedAt:null,unread:1,pending:ago(5),msgs:[{d:'in',x:'Hola, necesito precio de cemento x50',t:ago(5)}]},
+    {id:2,name:'Roberto Gimenez',line:'ma',owner:'ma',handler:'ma',pool:false,releasedAt:null,unread:1,pending:ago(12),msgs:[{d:'in',x:'Hola! ¿Tienen stock de hierro 8mm? Necesito 40 varillas',t:ago(12)}]},
+    {id:3,name:'Fernanda Suárez',line:'ma',owner:'ma',handler:'ma',pool:false,releasedAt:null,unread:0,pending:null,msgs:[{d:'in',x:'¿Retiro mañana por la mañana?',t:ago(1500)},{d:'out',x:'Sí, te esperamos desde las 8.',t:ago(1490)},{d:'in',x:'Perfecto, paso mañana a retirar',t:ago(1480)}]},
+    {id:4,name:'Lucas Torres',line:'pa',owner:'pa',handler:'pa',pool:false,releasedAt:null,unread:0,pending:null,msgs:[{d:'out',x:'Te paso el presupuesto en el día.',t:ago(1600)},{d:'in',x:'Gracias! Quedo atento al presupuesto',t:ago(1590)}]},
+    {id:5,name:'Mariana Paz',line:'ig',owner:'ig',handler:'ig',pool:false,releasedAt:null,unread:0,pending:null,msgs:[{d:'in',x:'¿Cuánto sale el flete a Venado?',t:ago(5000)},{d:'out',x:'Depende del peso, te confirmo.',t:ago(4990)},{d:'in',x:'Dale, te confirmo por acá',t:ago(4300)}]},
+    {id:6,name:'Constructora Ríos',line:'vi',owner:'vi',handler:'vi',pool:false,releasedAt:null,unread:1,pending:ago(130),msgs:[{d:'in',x:'Necesitamos cotización de 300 bolsas de cal',t:ago(130)}]},
+    {id:7,name:'Sofía Acosta',line:'be',owner:'be',handler:'be',pool:false,releasedAt:null,unread:0,pending:null,msgs:[{d:'out',x:'Quedó confirmado el pedido.',t:ago(900)}]}
+  ]
+};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hm=t=>new Date(t).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+const dur=ms=>{const s=Math.round(ms/1000);return s<60?s+' s':Math.round(s/60)+' min'};
+const rel=t=>{const m=Math.round((Date.now()-t)/MIN);return m<1?'ahora':m<60?m+' min':m<1440?Math.round(m/60)+' h':Math.round(m/1440)+' d'};
+const ini=n=>n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const last=c=>c.msgs[c.msgs.length-1];
+const present=u=>u==='mg'||!S.absent[u];
+function addLog(m){S.log.unshift({t:Date.now(),m})}
+function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,3200)}
+
+function visible(c,u){
+  if(u==='mg')return true;
+  if(c.handler===u||c.owner===u)return true;
+  return c.pool&&!c.handler&&present(u);
+}
+function shownMsgs(c,u){
+  if(c.releasedAt&&u!=='mg'&&u!==c.owner&&c.handler===u)return c.msgs.filter(m=>m.t>=c.releasedAt);
+  if(c.releasedAt&&c.pool&&!c.handler&&u!==c.owner&&u!=='mg')return c.msgs.filter(m=>m.t>=c.releasedAt);
+  return c.msgs;
+}
+function incoming(line,name,text){
+  name=name.trim()||'Cliente nuevo';
+  let c=S.convs.find(x=>x.name===name&&x.line===line);
+  const t=Date.now();
+  if(!c){c={id:S.seq++,name,line,owner:line==='general'?null:line,handler:line==='general'?null:line,pool:line==='general',releasedAt:null,unread:0,pending:null,msgs:[]};S.convs.unshift(c)}
+  c.msgs.push({d:'in',x:text,t});c.unread++;if(!c.pending)c.pending=t;
+  if(c.owner&&S.absent[c.owner]&&(c.handler===c.owner||!c.handler)){
+    c.pool=true;c.handler=null;if(!c.releasedAt)c.releasedAt=t;
+    addLog('Mensaje nuevo para '+USERS[c.owner]+' (ausente) de '+name+': se liberó al equipo, el historial queda reservado');
+    toast('Liberado al equipo: '+name+' (cartera de '+USERS[c.owner]+', ausente)');
+  }else toast('Nuevo mensaje en línea '+LINES[line]+': '+name);
+  render();
+}
+function take(c,u){
+  const wait=c.pending?Date.now()-c.pending:0;
+  c.handler=u;c.pool=false;
+  if(!c.owner)c.owner=u;
+  addLog(USERS[u]+' tomó la conversación de '+c.name+' ('+(c.releasedAt?'liberada de '+USERS[c.owner]:'bandeja general')+') tras '+dur(wait));
+}
+function reply(c,u,text){
+  if(!c.handler||c.handler!==u&&c.owner!==u)take(c,u);
+  const t=Date.now();c.msgs.push({d:'out',x:text,t});c.unread=0;
+  if(c.pending){const rt=t-c.pending;S.rts.push(rt);addLog(USERS[u]+' respondió a '+c.name+' en '+dur(rt));c.pending=null}
+  render();
+}
+function setAbsent(u,v){
+  S.absent[u]=v;
+  if(v){addLog('Marcelo marcó ausente a '+USERS[u]+': desde ahora solo sus mensajes nuevos se liberan al equipo');}
+  else{
+    let n=0;S.convs.forEach(c=>{if(c.owner===u&&c.pool&&!c.handler){c.pool=false;c.handler=u;c.releasedAt=null;n++}});
+    addLog(USERS[u]+' volvió: '+n+' conversación(es) no tomada(s) vuelven a su bandeja');
+  }
+  render();
+}
+function reassign(c,u){
+  c.handler=u;c.pool=false;if(!c.owner)c.owner=u;
+  addLog('Marcelo reasignó la conversación de '+c.name+' a '+USERS[u]);render();
+}
+
+function tagsFor(c){
+  const t=[];
+  if(c.pool&&!c.handler)t.push(c.owner?`<span class="tag warn">Liberado de ${USERS[c.owner]}</span>`:'<span class="tag new">Nuevo · general</span>');
+  else if(c.line==='general')t.push('<span class="tag">General → '+USERS[c.owner]+'</span>');
+  if(c.handler&&c.owner&&c.handler!==c.owner)t.push(`<span class="tag ok">Atiende ${USERS[c.handler]}</span>`);
+  if(S.me==='mg'&&!(c.pool&&!c.handler))t.push(`<span class="tag">${LINES[c.line]}</span>`);
+  if(c.pending&&Date.now()-c.pending>60*MIN)t.push('<span class="tag bad">Sin responder &gt;1 h</span>');
+  return t.join('');
+}
+function renderList(){
+  const u=S.me;
+  const cs=S.convs.filter(c=>visible(c,u)).sort((a,b)=>last(b).t-last(a).t);
+  $('lh').textContent=u==='mg'?'Todas las líneas ('+cs.length+')':'Mi bandeja y general ('+cs.length+')';
+  $('list').innerHTML=cs.length?cs.map(c=>{
+    const m=shownMsgs(c,u);const l=m[m.length-1]||last(c);
+    return `<button class="conv ${S.sel===c.id?'sel':''}" data-id="${c.id}"><div class="av">${esc(ini(c.name))}</div><div class="cb"><div class="l1"><span class="nm">${esc(c.name)}</span><span class="tm">${rel(l.t)}</span></div><div class="pv">${l.d==='out'?'Vos: ':''}${esc(l.x)}</div><div class="tags">${tagsFor(c)}${c.unread&&(c.handler===u||c.pool)?`<span class="tag new">${c.unread} sin leer</span>`:''}</div></div></button>`}).join(''):'<div class="empty">No hay conversaciones para mostrar.</div>';
+  $('list').querySelectorAll('.conv').forEach(b=>b.onclick=()=>{S.sel=+b.dataset.id;S.view='chat';const c=S.convs.find(x=>x.id===S.sel);if(c&&(c.handler===S.me||c.owner===S.me))c.unread=0;render()});
+}
+function renderChat(c){
+  const u=S.me, ms=shownMsgs(c,u), sup=u==='mg';
+  const canTake=!sup&&c.pool&&!c.handler;
+  const restricted=ms.length<c.msgs.length;
+  let h=`<div class="chead"><div><b>${esc(c.name)}</b><small>Línea ${LINES[c.line]}${c.owner?' · cartera de '+USERS[c.owner]:' · sin asignar'}${c.handler&&c.handler!==c.owner?' · atiende '+USERS[c.handler]:''}</small></div>`;
+  if(sup){h+=`<div class="who"><label for="ra">Reasignar a</label><select id="ra"><option value="">Elegir…</option>${SELLERS.map(s=>`<option value="${s}">${USERS[s]}${S.absent[s]?' (ausente)':''}</option>`).join('')}</select><button class="btn ghost" id="back">← Panel</button></div>`}
+  h+=`</div><div class="msgs">`;
+  if(restricted)h+=`<div class="note">Historial anterior reservado a ${USERS[c.owner]}. Solo ves los mensajes nuevos.</div>`;
+  h+=ms.map(m=>`<div class="b ${m.d==='out'?'out':''}">${esc(m.x)}<time>${hm(m.t)}</time></div>`).join('')+`</div>`;
+  if(canTake)h+=`<div class="take"><span>${c.owner?'Mensaje nuevo liberado por ausencia.':'Consulta nueva sin vendedor.'} Quien la toma queda asignado.</span><button class="btn" id="take">Tomar conversación</button></div>`;
+  else if(sup)h+=`<div class="take"><span class="note" style="background:none">Vista de supervisor: lectura y reasignación.</span></div>`;
+  else h+=`<form class="compose" id="cf"><input type="text" id="ct" placeholder="Escribí una respuesta…" autocomplete="off"><button class="btn" type="submit">Enviar</button></form>`;
+  $('right').innerHTML=`<section class="panel chat">${h}</section>`;
+  if($('take'))$('take').onclick=()=>{take(c,u);c.unread=0;render()};
+  if($('cf'))$('cf').onsubmit=e=>{e.preventDefault();const v=$('ct').value.trim();if(v)reply(c,u,v)};
+  if($('ra'))$('ra').onchange=e=>{if(e.target.value)reassign(c,e.target.value)};
+  if($('back'))$('back').onclick=()=>{S.view='panel';S.sel=null;render()};
+  const m=$('right').querySelector('.msgs');m.scrollTop=m.scrollHeight;
+}
+function renderPanel(){
+  const pres=SELLERS.filter(s=>!S.absent[s]).length;
+  const stale=S.convs.filter(c=>c.pending&&Date.now()-c.pending>60*MIN).length;
+  const avg=S.rts.reduce((a,b)=>a+b,0)/S.rts.length;
+  const rows=['general',...SELLERS].map(l=>{
+    const n=S.convs.filter(c=>c.line===l).length;
+    const isS=l!=='general', ab=isS&&S.absent[l];
+    const pool=S.convs.filter(c=>c.pool&&!c.handler&&(l==='general'?!c.owner:c.owner===l)).length;
+    return `<tr><td><b>${LINES[l]}</b></td><td>${isS?(ab?'<span class="tag warn">Ausente</span>':'<span class="tag ok">Presente</span>'):'<span class="tag">Bandeja compartida</span>'}</td><td>${n} conv. · ${pool} sin tomar</td><td>${isS?`<button class="sw" data-ab="${l}">${ab?'Marcar presente':'Marcar ausente'}</button>`:''}</td></tr>`}).join('');
+  $('right').innerHTML=`<section class="panel"><h2>Panel de supervisor · Marcelo</h2>
+  <div class="kpis"><div class="kpi"><b>6</b><span>Líneas activas</span></div><div class="kpi"><b>${pres}</b><span>Vendedores presentes</span></div><div class="kpi"><b>${stale}</b><span>Sin responder &gt;1 h</span></div><div class="kpi"><b>${dur(avg)}</b><span>Tiempo prom. de respuesta</span></div></div>
+  <div class="scroll"><table class="lines"><thead><tr><th>Línea</th><th>Estado</th><th>Actividad</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></section>
+  <section class="panel"><h2>Trazabilidad</h2><ul class="log">${S.log.map(l=>`<li><time>${hm(l.t)}</time><span>${esc(l.m)}</span></li>`).join('')}</ul></section>`;
+  $('right').querySelectorAll('[data-ab]').forEach(b=>b.onclick=()=>setAbsent(b.dataset.ab,!S.absent[b.dataset.ab]));
+}
+function render(){
+  renderList();
+  const c=S.convs.find(x=>x.id===S.sel);
+  if(S.me==='mg'&&S.view==='panel')renderPanel();
+  else if(c&&visible(c,S.me))renderChat(c);
+  else $('right').innerHTML='<section class="panel"><div class="empty">Elegí una conversación de la lista.</div></section>';
+}
+$('who').innerHTML=Object.entries(USERS).map(([k,v])=>`<option value="${k}">${v}${k==='mg'?' (supervisor)':''}</option>`).join('');
+$('who').value=S.me;
+$('who').onchange=e=>{S.me=e.target.value;S.sel=null;S.view=S.me==='mg'?'panel':'chat';render()};
+$('sline').innerHTML=Object.entries(LINES).map(([k,v])=>`<option value="${k}">${k==='general'?'Número general':'Línea de '+v}</option>`).join('');
+$('ssend').onclick=()=>{const t=$('stext').value.trim();if(t)incoming($('sline').value,$('sname').value,t)};
+$('chips').innerHTML=['Hola, necesito precio de cemento x50','¿Tienen stock de hierro 8mm?','Pasame presupuesto de 2000 ladrillos','¿Hacen envíos hoy?'].map(t=>`<button class="chip">${esc(t)}</button>`).join('');
+$('chips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{$('stext').value=b.textContent});
+render();
+</script>
