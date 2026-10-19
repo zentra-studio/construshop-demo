@@ -25,6 +25,13 @@
 .mnote{padding:6px 14px 10px;font-size:12px;color:var(--muted)}
 @media(max-width:560px){.lines th:nth-child(3),.lines td:nth-child(3){display:none}}
 @media(max-width:560px){.bar{display:none}.sw{white-space:nowrap}}
+.main.sup{grid-template-columns:minmax(0,1fr) minmax(0,340px)}
+.main.sup>#right{order:-1}
+@media(max-width:820px){.main.sup{grid-template-columns:minmax(0,1fr)}}
+.scenbar{background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:12px}
+.scenbar .sl{font-size:13px;margin-bottom:8px}.scenbar .sl small{color:var(--muted)}
+.scenbar .scen,.scenbar .hint{padding:0}.scenbar .hint{margin-top:6px}
+.own.bottom{margin-top:12px;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
 </style>
 <title>Construshop Inbox</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -117,29 +124,29 @@ select,input[type=text]{background:var(--surface);border:1px solid var(--line);b
   <div class="banner">Demo con datos de ejemplo, sin conexión a WhatsApp. Elegí un usuario y probá los escenarios.</div>
   <div id="welcome"></div>
   <div id="app" hidden>
-    <details class="sim" id="simbox" open>
-      <summary>Probar la demo</summary>
+    <div class="scenbar" id="simbox">
+      <div class="sl"><b>Para probar:</b> simulá que un cliente escribe por WhatsApp <small>(en la plataforma real, esto lo hace WhatsApp solo)</small></div>
       <div class="scen">
         <button class="btn" id="sc1">1 · Escribe un cliente nuevo al número general</button>
         <button class="btn" id="sc2">2 · Escribe un cliente de Ignacio, que está ausente</button>
         <button class="btn ghost" id="sc3">Reiniciar demo</button>
       </div>
       <div class="hint" id="hint"></div>
-      <details class="own">
-        <summary>Escribir un mensaje propio</summary>
-        <div class="row">
-          <select id="sline" aria-label="Línea a la que escribe"></select>
-          <input type="text" id="sname" value="Carlos Benítez" aria-label="Nombre del cliente">
-          <input type="text" id="stext" value="Hola, necesito precio de cemento x50" aria-label="Mensaje">
-          <button class="btn" id="ssend">Enviar como cliente</button>
-        </div>
-        <div class="chips" id="chips"></div>
-      </details>
-    </details>
-    <div class="main" style="margin-top:12px">
+    </div>
+    <div class="main" id="mainbox">
       <section class="panel"><h2 id="lh">Conversaciones</h2><div class="list" id="list"></div></section>
       <div class="stack" id="right"></div>
     </div>
+    <details class="own bottom">
+      <summary>Escribir un mensaje de cliente propio</summary>
+      <div class="row">
+        <select id="sline" aria-label="Línea a la que escribe"></select>
+        <input type="text" id="sname" value="Carlos Benítez" aria-label="Nombre del cliente">
+        <input type="text" id="stext" value="Hola, necesito precio de cemento x50" aria-label="Mensaje">
+        <button class="btn" id="ssend">Enviar como cliente</button>
+      </div>
+      <div class="chips" id="chips"></div>
+    </details>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -151,7 +158,7 @@ const LINES={general:'General',pa:'Patricio',ma:'Marcela',ig:'Ignacio',vi:'Victo
 const MIN=60000, now0=Date.now();
 const ago=m=>now0-m*MIN;
 let S={
-  me:null, policy:'sup', hint:'', sel:null, view:'panel', seq:100,
+  me:null, policy:'ambos', hint:'', sel:null, view:'panel', seq:100,
   absent:{pa:false,ma:false,ig:false,vi:false,be:false},
   rts:[90000,150000,60000,200000,140000],
   log:[{t:ago(25),m:'Marcela tomó la consulta de Mariana Paz (General) en 1 min'}],
@@ -305,6 +312,7 @@ function renderTop(){
 function render(){
   const on=!!S.me;
   $('welcome').hidden=on; $('app').hidden=!on; renderTop();
+  $('mainbox').classList.toggle('sup',S.me==='mg');
   $('hint').textContent=S.hint||'Tocá un escenario para simular qué pasa cuando escribe un cliente.';
   if(!on){renderWelcome();return}
   renderList();
